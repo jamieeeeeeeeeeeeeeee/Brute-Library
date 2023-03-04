@@ -8,11 +8,13 @@ Exhaustive search for noughts and crosses (tic-tac-toe).
 (assumes X is the first player)
 
 ### Example
-(e.g `exhaust ..o.xoxox`): 
+`exhaust ..o.xoxox`
 <pre>
 | | |o|
 | |x|o|
 |x|o|x| 
+
+1 X wins
 </pre>
 ## Next Steps
 - [ ] Consider rotation and reflections of the same position
