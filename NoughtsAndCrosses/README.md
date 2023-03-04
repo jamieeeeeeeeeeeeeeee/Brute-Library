@@ -8,6 +8,7 @@ Exhaustive search for noughts and crosses (tic-tac-toe).
 (assumes X is the first player)
 
 
+
 (e.g `exhaust ..o.xoxox`): 
 <pre>
 | | |o|
