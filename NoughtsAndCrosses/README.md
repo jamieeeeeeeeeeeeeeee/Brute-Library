@@ -9,11 +9,11 @@ Exhaustive search for noughts and crosses (tic-tac-toe).
 
 (e.g `exhaust ..o.xoxox`): 
 
-|.|.|o|
+| . | . | o |
 
-|.|x|o|
+| . | x | o |
 
-|x|o|x| 
+| x | o | x | 
 
 ## Next Steps
 - [ ] Consider rotation and reflections of the same position
