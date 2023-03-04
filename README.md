@@ -1,2 +1,2 @@
 # Brute Library
-Library of exhaustive search or brute force algorithms
+Library of exhaustive search and brute force algorithms.
