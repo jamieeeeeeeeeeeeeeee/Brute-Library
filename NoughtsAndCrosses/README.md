@@ -14,7 +14,7 @@ Exhaustive search for noughts and crosses (tic-tac-toe).
 | |x|o|
 |x|o|x| 
 
-1 X wins
+X wins
 </pre>
 ## Next Steps
 - [ ] Consider rotation and reflections of the same position
