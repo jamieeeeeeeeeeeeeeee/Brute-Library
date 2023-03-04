@@ -1,4 +1,4 @@
-# Chess Brute Forcer
+# Chess
 Exhaustive search for Chess. Obviously this will never complete!
 
 ## Big Thanks
