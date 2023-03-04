@@ -1,5 +1,5 @@
 # Primes
-Prime finding programs
+Prime finding programs.
 
 ## Eratosthenes
 Sieve of Eratosthenes
