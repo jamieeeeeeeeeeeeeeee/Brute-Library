@@ -1,4 +1,4 @@
-# Noughts And Crosses Brute Forcer
+# Noughts And Crosses
 Exhaustive search for noughts and crosses (tic-tac-toe).
 
 ## Usage
