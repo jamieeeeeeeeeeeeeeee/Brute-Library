@@ -7,7 +7,7 @@ Exhaustive search for noughts and crosses (tic-tac-toe).
 `exhaust .........` for a specific position
 (assumes X is the first player)
 
-#### Example
+### Example
 `exhaust ..o.xoxox`
 <pre>
 | | |o|
