@@ -1,5 +1,5 @@
 # Primes
-Algorithms for finding primes
+Prime finding programs
 
 ## Usage 
 `eratosthenes` to search for all primes < 99,999,999,999 (~10gb memory)
