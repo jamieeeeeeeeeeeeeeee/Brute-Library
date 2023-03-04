@@ -4,7 +4,13 @@ Exhaustive search for noughts and crosses (tic-tac-toe).
 ## Usage
 `exhaust` for full search
 
-`exhaust .........` for a specific position (e.g `exhaust ..o.xoxox`)
+`exhaust .........` for a specific position
+(assumes X is the first player)
+
+(e.g `exhaust ..o.xoxox`): 
+| | |o|
+| |x|o|
+|x|o|x| 
 
 ## Next Steps
 - [ ] Consider rotation and reflections of the same position
