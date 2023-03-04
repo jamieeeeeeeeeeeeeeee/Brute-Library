@@ -9,6 +9,7 @@ Big thanks to [Code Monkey King](https://www.youtube.com/@MaksimKorzh_aka_CodeMo
 
 ## Next Steps
 - [ ] Add alpha-beta pruning
+- [ ] Add tablebase support
 - [ ] Consider reflections
 - [ ] Return optimal moveset
 - [ ] GUI
