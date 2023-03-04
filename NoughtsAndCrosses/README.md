@@ -9,9 +9,9 @@ Exhaustive search for noughts and crosses (tic-tac-toe).
 
 (e.g `exhaust ..o.xoxox`): 
 
-| | |o|
+|.|.|o|
 
-| |x|o|
+|.|x|o|
 
 |x|o|x| 
 
