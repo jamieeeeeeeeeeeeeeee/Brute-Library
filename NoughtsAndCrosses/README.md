@@ -8,13 +8,13 @@ Exhaustive search for noughts and crosses (tic-tac-toe).
 (assumes X is the first player)
 
 (e.g `exhaust ..o.xoxox`): 
-
+<pre>
 |   | .. | o |
 
 | .. | x | o |
 
 | x | o | x | 
-
+</pre>
 ## Next Steps
 - [ ] Consider rotation and reflections of the same position
 - [ ] Return optimal moveset
