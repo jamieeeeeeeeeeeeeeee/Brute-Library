@@ -9,11 +9,9 @@ Exhaustive search for noughts and crosses (tic-tac-toe).
 
 (e.g `exhaust ..o.xoxox`): 
 <pre>
-|   |   | o |
-
-|   | x | o |
-
-| x | o | x | 
+| | |o|
+| |x|o|
+|x|o|x| 
 </pre>
 ## Next Steps
 - [ ] Consider rotation and reflections of the same position
