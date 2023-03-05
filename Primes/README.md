@@ -8,4 +8,5 @@ Sieve of Eratosthenes
 
 `eratosthenes-c or eratosthenes-rs [number]` to search for all primes < number
 
-C version is faster, but this is my first Rust program so if there are any optimisations that can be made (to either) please let me know!
+### Notes
+C version is faster by a smidge, but this is my first Rust program so if there are any optimisations that can be made (to either) please let me know!
