@@ -7,7 +7,7 @@ Big thanks to [Code Monkey King](https://www.youtube.com/@MaksimKorzh_aka_CodeMo
 ## Usage
 `exhaust` 
 
-## Next Steps
+## To-Do
 - [ ] Add alpha-beta pruning
 - [ ] Add tablebase support
 - [ ] Consider reflections
