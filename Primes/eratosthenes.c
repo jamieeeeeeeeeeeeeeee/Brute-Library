@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
 
     memset(array, 255, (MAX / 8 + 1) * sizeof(uint8_t));
 
-    array[0] &= 0xFC; // 0, 1 are not primes
+    array[0] &= 0xFC; // 0 and 1 are not prime
 
     while (divisor < sqrt_max) {
         i = divisor + 1;

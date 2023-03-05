@@ -27,7 +27,7 @@ fn main () {
     let mut divisor = 1usize;
     let sqrt_max = (max as f64).sqrt() as usize;
 
-    array[0] &= 0xFC;
+    array[0] &= 0xFC; // 0 and 1 are not prime
 
     while divisor < sqrt_max {
         i = divisor + 1;
