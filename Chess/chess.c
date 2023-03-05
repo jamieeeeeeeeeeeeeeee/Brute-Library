@@ -18,16 +18,19 @@ char checkmateresult;
 int winning_move;
 char PYFEN[128];
 
-static inline int count_bits(U64 bitboard) {
-  int count = 0;
-  while (bitboard) {
-    count++;
-    bitboard &= bitboard - 1;
-  }
-
-  return count;
+static int count_bits(U64 bitboard) {
+  #ifdef __builtin_popcountll
+    return __builtin_popcountll(bitboard);
+  #else
+    // Use your own popcount function if the built-in function is not available
+    int count = 0;
+    while (bitboard) {
+      count++;
+      bitboard &= bitboard - 1;
+    }
+    return count;
+  #endif
 }
-
 void print_bitboard(U64 bitboard) {
   printf("\n");
 
@@ -500,21 +503,21 @@ void init_sliders_attacks(int bishop) {
     }
   }
 }
-static inline U64 get_bishop_attacks(int square, U64 occupancy) {
+static U64 get_bishop_attacks(int square, U64 occupancy) {
   occupancy &= bishop_masks[square];
   occupancy *= bishop_magic_numbers[square];
   occupancy >>= 64 - bishop_relevant_bits[square];
 
   return bishop_attacks[square][occupancy];
 }
-static inline U64 get_rook_attacks(int square, U64 occupancy) {
+static U64 get_rook_attacks(int square, U64 occupancy) {
   occupancy &= rook_masks[square];
   occupancy *= rook_magic_numbers[square];
   occupancy >>= 64 - rook_relevant_bits[square];
 
   return rook_attacks[square][occupancy];
 }
-static inline U64 get_queen_attacks(int square, U64 occupancy) {
+static U64 get_queen_attacks(int square, U64 occupancy) {
   U64 queen_attacks = 0ULL;
   U64 bishop_occupancy = occupancy;
   U64 rook_occupancy = occupancy;
@@ -532,7 +535,7 @@ static inline U64 get_queen_attacks(int square, U64 occupancy) {
   queen_attacks |= rook_attacks[square][rook_occupancy];
   return queen_attacks;
 }
-static inline int is_square_attacked(int square, int side) {
+static int is_square_attacked(int square, int side) {
   if ((side == white) && (pawn_attacks[black][square] & bitboards[P])) {
     return 1;
   }
@@ -636,7 +639,7 @@ char checkorstale(void) {
   return 's';
 }
 
-static inline int makemove(int move, int move_flag) {
+static int makemove(int move, int move_flag) {
   int source_square = getmovesource(move);
   int target_square = getmovetarget(move);
   int piece = getmovepiece(move);
@@ -761,8 +764,28 @@ static inline int makemove(int move, int move_flag) {
   }
   return 1;
 }
+moves get_moves(int source) {
+  moves possible_moves[1];
+  memset(possible_moves, 0, sizeof(possible_moves));
+  Moves(possible_moves);
+  moves moves_to_return[1];
+  memset(moves_to_return, 0, sizeof(moves_to_return));
+  for (int move_count = 0; move_count < possible_moves->count; move_count++) {
+    if (getmovesource(possible_moves->moves[move_count]) == source) {
+      moves_to_return->moves[moves_to_return->count++] = possible_moves->moves[move_count];
+    }
+  }
 
-static inline void Moves(moves* possible_moves) {
+  return *moves_to_return;
+}
+char* py_makemove(int move) {
+  makemove(move, all_moves);
+  side = !side;
+  gen_fen();
+  return PYFEN;
+}
+
+static void Moves(moves* possible_moves) {
   possible_moves->count = 0;
   int source_square, target_square;
   U64 bitboard, attacks;
@@ -783,7 +806,8 @@ static inline void Moves(moves* possible_moves) {
               addmove(possible_moves, encodemove(source_square, target_square, piece, R, 0, 0, 0, 0));
               addmove(possible_moves, encodemove(source_square, target_square, piece, B, 0, 0, 0, 0));
               addmove(possible_moves, encodemove(source_square, target_square, piece, N, 0, 0, 0, 0));
-            } else {
+            }
+            else {
               addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 0, 0, 0, 0));
 
               if ((source_square >= a2 && source_square <= h2) && !getbit(occboards[both], target_square - 8)) {
@@ -802,7 +826,8 @@ static inline void Moves(moves* possible_moves) {
               addmove(possible_moves, encodemove(source_square, target_square, piece, R, 1, 0, 0, 0));
               addmove(possible_moves, encodemove(source_square, target_square, piece, B, 1, 0, 0, 0));
               addmove(possible_moves, encodemove(source_square, target_square, piece, N, 1, 0, 0, 0));
-            } else {
+            }
+            else {
               addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 1, 0, 0, 0));
             }
 
@@ -839,7 +864,8 @@ static inline void Moves(moves* possible_moves) {
           }
         }
       }
-    } else {
+    }
+    else {
       if (piece == p) {
         while (bitboard) {
           source_square = bitScanForward(bitboard);
@@ -852,7 +878,8 @@ static inline void Moves(moves* possible_moves) {
               addmove(possible_moves, encodemove(source_square, target_square, piece, r, 0, 0, 0, 0));
               addmove(possible_moves, encodemove(source_square, target_square, piece, b, 0, 0, 0, 0));
               addmove(possible_moves, encodemove(source_square, target_square, piece, n, 0, 0, 0, 0));
-            } else {
+            }
+            else {
               addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 0, 0, 0, 0));
 
               if ((source_square >= a7 && source_square <= h7) && !getbit(occboards[both], target_square + 8)) {
@@ -871,7 +898,8 @@ static inline void Moves(moves* possible_moves) {
               addmove(possible_moves, encodemove(source_square, target_square, piece, r, 1, 0, 0, 0));
               addmove(possible_moves, encodemove(source_square, target_square, piece, b, 1, 0, 0, 0));
               addmove(possible_moves, encodemove(source_square, target_square, piece, n, 1, 0, 0, 0));
-            } else {
+            }
+            else {
               addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 1, 0, 0, 0));
             }
 
@@ -921,7 +949,8 @@ static inline void Moves(moves* possible_moves) {
 
           if (!getbit(((side == white) ? occboards[black] : occboards[white]), target_square)) {
             addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 0, 0, 0, 0));
-          } else {
+          }
+          else {
             addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 1, 0, 0, 0));
           }
 
@@ -943,7 +972,8 @@ static inline void Moves(moves* possible_moves) {
 
           if (!getbit(((side == white) ? occboards[black] : occboards[white]), target_square)) {
             addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 0, 0, 0, 0));
-          } else {
+          }
+          else {
             addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 1, 0, 0, 0));
           }
 
@@ -965,7 +995,8 @@ static inline void Moves(moves* possible_moves) {
 
           if (!getbit(((side == white) ? occboards[black] : occboards[white]), target_square)) {
             addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 0, 0, 0, 0));
-          } else {
+          }
+          else {
             addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 1, 0, 0, 0));
           }
 
@@ -987,7 +1018,8 @@ static inline void Moves(moves* possible_moves) {
 
           if (!getbit(((side == white) ? occboards[black] : occboards[white]), target_square)) {
             addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 0, 0, 0, 0));
-          } else {
+          }
+          else {
             addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 1, 0, 0, 0));
           }
 
@@ -1009,7 +1041,8 @@ static inline void Moves(moves* possible_moves) {
 
           if (!getbit(((side == white) ? occboards[black] : occboards[white]), target_square)) {
             addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 0, 0, 0, 0));
-          } else {
+          }
+          else {
             addmove(possible_moves, encodemove(source_square, target_square, piece, 0, 1, 0, 0, 0));
           }
 
@@ -1021,8 +1054,7 @@ static inline void Moves(moves* possible_moves) {
     }
   }
 }
-
-static inline int Evaluate(int depth) {
+static int Evaluate(int depth) {
   if (depth == 0) {
     nodes++;
     return 6;
@@ -1061,7 +1093,8 @@ static inline int Evaluate(int depth) {
     // if none of the above it must be a normal move and we continue on
     if (possible_moves->cont == 0) {
       possible_moves->cont = 1;
-    } else {
+    }
+    else {
       possible_moves->cont = 2;
     }
 
@@ -1073,15 +1106,18 @@ static inline int Evaluate(int depth) {
     if (result == side) {
       possible_moves->win = 1;
       // possible_moves->winning_move = possible_moves->moves[move_count];
-    } else if (result == 5 || result == both) {
+    }
+    else if (result == 5 || result == both) {
       // if not then we check if == draw..
       possible_moves->draw = 1;
       // cbranch.count -= 1;
-    } else if (result == 6) {
+    }
+    else if (result == 6) {
       // any moves that aren't immediate draws / checkmates...
       possible_moves->cont = 1;
       // cbranch.count -= 1;
-    } else {
+    }
+    else {
       // and if no wins, draws, or continue playings then we must lose :(
       possible_moves->lose = 1;
       if (possible_moves->cont > 0) {
@@ -1114,36 +1150,13 @@ static inline int Evaluate(int depth) {
   // we would get to this point if there were no legal moves evaluated..
   // so either the position is already in checkmate
   // or the position is a stalemate.., so we check -> is it a checkmate by seeing if our our king is attacked
-  if (is_square_attacked((side == white) ? bitScanForward(bitboards[K]) : bitScanForward(bitboards[k]), side))
-  {
+  if (is_square_attacked((side == white) ? bitScanForward(bitboards[K]) : bitScanForward(bitboards[k]), side)) {
     return !side;
-  } else {
+  }
+  else {
     // and if not attacked then its a stalemate
     return both;
   }
-
-}
-
-moves get_moves(int source) {
-  moves possible_moves[1];
-  memset(possible_moves, 0, sizeof(possible_moves));
-  Moves(possible_moves);
-  moves moves_to_return[1];
-  memset(moves_to_return, 0, sizeof(moves_to_return));
-  for (int move_count = 0; move_count < possible_moves->count; move_count++) {
-    if (getmovesource(possible_moves->moves[move_count]) == source) {
-      moves_to_return->moves[moves_to_return->count++] = possible_moves->moves[move_count];
-    }
-  }
-
-  return *moves_to_return;
-}
-
-char* py_makemove(int move) {
-  makemove(move, all_moves);
-  side = !side;
-  gen_fen();
-  return PYFEN;
 }
 
 #define FEN "2bqkbn1/2pppp2/np2N3/r3P1p1/p2N2B1/5Q2/PPPPKPP1/RNB2r2 w KQkq - 0 1"
