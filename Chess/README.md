@@ -6,12 +6,12 @@ Big thanks to [Code Monkey King](https://www.youtube.com/@MaksimKorzh_aka_CodeMo
 
 ## Usage
 `chess` for brute force from starting position
-`python chess` to run the user interface **(WIP)**
+`python chess` to run the UI **(WIP)**
 
 ## To-Do
+- [ ] GUI **(WIP)**
 - [ ] Add alpha-beta pruning
 - [ ] Add tablebase support
 - [ ] Consider reflections
 - [ ] Return optimal moveset
-- [-] GUI
 - [ ] Multi-threading / Parallelisation ?
