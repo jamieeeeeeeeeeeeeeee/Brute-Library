@@ -6,7 +6,5 @@ Library of exhaustive search and brute force algorithms.
 - [x] Noughts and Crosses / Tic-Tac-Toe 
 - [x] Sieve of Eratosthenes (C and Rust)
 
-## In-Progress
-
 ## To-Do
 - [ ] Make coding style consistent
