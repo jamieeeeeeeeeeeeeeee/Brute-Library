@@ -3,6 +3,7 @@ use std::process;
 use std::time::Instant;
 // use std::io::{self, Write};
 
+// Sieve of Eratosthenes
 fn main () {
     let start = Instant::now();
     let args: Vec<String> = env::args().skip(1).collect();
