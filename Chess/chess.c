@@ -1165,11 +1165,6 @@ int main(int argc , char **argv) {
   unsigned long long moves_looked_at = __LONG_LONG_MAX__;
   int start;
   int end;
-  if (argc == 2) {
-    char* fen = argv[1];
-  } else {
-    char* fen = FEN_START;
-  }
   for (unsigned long long i = 1, n = moves_looked_at * 2; i < n; i++) {
     parse_fen(FEN_START);
     printf("%llu: ", i);
