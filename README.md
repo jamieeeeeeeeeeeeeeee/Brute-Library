@@ -1,5 +1,5 @@
 # Brute Library
-Library of exhaustive search and brute force algorithms, written in C.
+Library of exhaustive search and brute force algorithms written in C.
 
 ## Completed (to a working standard)
 - [x] Chess
