@@ -1,6 +1,7 @@
 # Brute Library
 Library of exhaustive search and brute force algorithms written in C.
-Please contribute! 
+
+**Please contribute!**
 
 ## Completed (to a working standard)
 - [x] Chess
