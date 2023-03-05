@@ -16,7 +16,7 @@ Exhaustive search for noughts and crosses (tic-tac-toe).
 
 X wins
 </pre>
-## Next Steps
+## To - Do
 - [x] Add alpha-beta pruning 
 - [ ] Consider rotation and reflections of the same position
 - [ ] Return optimal moveset
