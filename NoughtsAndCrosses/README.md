@@ -2,9 +2,9 @@
 Exhaustive search for noughts and crosses (tic-tac-toe).
 
 ## Usage
-`exhaust` for full search
+`noughtsandcrosses` for full search
 
-`exhaust [position]` for a specific position
+`noughtsandcrosses [position]` for a specific position
 (assumes X is the first player)
 <br></br>
 ### Example
