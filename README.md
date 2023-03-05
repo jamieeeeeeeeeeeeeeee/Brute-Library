@@ -1,9 +1,12 @@
 # Brute Library
 Library of exhaustive search and brute force algorithms.
 
-# Checklist
+# Completed (to a working standard)
 - [x] Chess
-- [x] Noughts and Crosses
+- [x] Noughts and Crosses / Tic-Tac-Toe 
 - [x] Sieve of Eratosthenes (C and Rust)
 
+# In-Progress
+
+# To-Do
 - [ ] Make coding style consistent
