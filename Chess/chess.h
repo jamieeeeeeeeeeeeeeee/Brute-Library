@@ -1,15 +1,45 @@
 #include <stdio.h>
 #include <string.h>
 #include <windows.h>
+/**sys/time.h unistd.h*/
 
 #ifdef __LONG_LONG_MAX__
 #else
-#define __LONG_LONG_MAX__ 9223372036854775807
+    #define __LONG_LONG_MAX__ 9223372036854775807
 #endif
 
 #define U64 unsigned long long
 #define contin 6
 #define stale 5
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
+const int lsb_64_table[64] =
+{
+   63, 30,  3, 32, 59, 14, 11, 33,
+   60, 24, 50,  9, 55, 19, 21, 34,
+   61, 29,  2, 53, 51, 23, 41, 18,
+   56, 28,  1, 43, 46, 27,  0, 35,
+   62, 31, 58,  4,  5, 49, 54,  6,
+   15, 52, 12, 40,  7, 42, 45, 16,
+   25, 57, 48, 13, 10, 39,  8, 44,
+   20, 47, 38, 22, 17, 37, 36, 26
+};
+
+unsigned int folded;
+/**
+ * bitScanForward
+ * @author Matt Taylor (2003)
+ * @param bb bitboard to scan
+ * @precondition bb != 0
+ * @return index (0..63) of least significant one bit
+ */
+int bitScanForward(U64 bb) {
+   bb ^= bb - 1;
+   folded = (int) bb ^ (bb >> 32);
+   return lsb_64_table[folded * 0x78291ACF >> 26];
+}
+//////////////////////////////////////////////////////
+//////////////////////////////////////////////////////
 
 #define setbit(bitboard, square) ((bitboard) |= (1ULL << (square)))
 #define getbit(bitboard, square) ((bitboard) & (1ULL << (square)))
@@ -25,7 +55,7 @@
     (double << 21) |    \
     (enpassant << 22) | \
     (castling << 23)    \
-
+    
 #define getmovesource(move) (move & 0x3f)
 #define getmovetarget(move) ((move & 0xfc0) >> 6)
 #define getmovepiece(move) ((move & 0xf000) >> 12)
@@ -52,51 +82,40 @@
 #define FEN_START "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 "
 
 typedef struct {
-  int moves[300];
-  unsigned long long count;
-  char win;
-  char draw;
-  char lose;
-  char cont;
-  int winning_move;
+    int moves[300];
+    unsigned long long count;
+    char win;
+    char draw;
+    char lose;
+    char cont;
+    int winning_move;
 } moves;
 
 typedef struct
 {
-  int leaves[1000000];
-  int count;
-  int lastcapture;
-  int lastcapturecopy;
-  int lastmovewasacapture;
+    int leaves[1000000];
+    int count;
+    int lastcapture;
+    int lastcapturecopy;
+    int lastmovewasacapture;
 } branch;
 
-enum {
-  a8, b8, c8, d8, e8, f8, g8, h8,
-  a7, b7, c7, d7, e7, f7, g7, h7,
-  a6, b6, c6, d6, e6, f6, g6, h6,
-  a5, b5, c5, d5, e5, f5, g5, h5,
-  a4, b4, c4, d4, e4, f4, g4, h4,
-  a3, b3, c3, d3, e3, f3, g3, h3,
-  a2, b2, c2, d2, e2, f2, g2, h2,
-  a1, b1, c1, d1, e1, f1, g1, h1, null_square
+enum {a8, b8, c8, d8, e8, f8, g8, h8,
+    a7, b7, c7, d7, e7, f7, g7, h7,
+    a6, b6, c6, d6, e6, f6, g6, h6,
+    a5, b5, c5, d5, e5, f5, g5, h5,
+    a4, b4, c4, d4, e4, f4, g4, h4,
+    a3, b3, c3, d3, e3, f3, g3, h3,
+    a2, b2, c2, d2, e2, f2, g2, h2,
+    a1, b1, c1, d1, e1, f1, g1, h1, null_square
 };
-enum {
-  P, N, B, R, Q, K, p, n, b, r, q, k
-};
-enum {
-  white, black, both
-};
-enum {
-  rook, bishop
-};
-enum {
-  wk = 1, wq = 2, bk = 4, bq = 8
-};
-enum {
-  all_moves, matecheck
-};
+enum {P, N, B, R, Q, K, p, n, b, r, q, k};
+enum {white, black, both};
+enum {rook, bishop};
+enum {wk = 1, wq = 2, bk = 4, bq = 8};
+enum {all_moves, matecheck};
 
-const char* square_to_coordinates[] = { "a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
+const char *square_to_coordinates[] = {"a8", "b8", "c8", "d8", "e8", "f8", "g8", "h8",
     "a7", "b7", "c7", "d7", "e7", "f7", "g7", "h7",
     "a6", "b6", "c6", "d6", "e6", "f6", "g6", "h6",
     "a5", "b5", "c5", "d5", "e5", "f5", "g5", "h5",
@@ -106,7 +125,7 @@ const char* square_to_coordinates[] = { "a8", "b8", "c8", "d8", "e8", "f8", "g8"
     "a1", "b1", "c1", "d1", "e1", "f1", "g1", "h1",
 };
 const char ascii_pieces[12] = "PNBRQKpnbrqk";
-const char* unicode_pieces[12] = { "♟︎", "♞", "♝", "♜", "♛", "♚", "♙", "♘", "♗", "♖", "q", "♔" };
+const char *unicode_pieces[12] = {"♟︎", "♞", "♝", "♜", "♛", "♚", "♙", "♘", "♗", "♖", "q", "♔"};
 const int char_pieces[] = {
     ['P'] = P,
     ['N'] = N,
@@ -279,698 +298,27 @@ const U64 bishop_magic_numbers[64] = {
     0x4010011029020020ULL
 };
 const int bishop_relevant_bits[64] = {
-    6, 5, 5, 5, 5, 5, 5, 6,
-    5, 5, 5, 5, 5, 5, 5, 5,
-    5, 5, 7, 7, 7, 7, 5, 5,
-    5, 5, 7, 9, 9, 7, 5, 5,
-    5, 5, 7, 9, 9, 7, 5, 5,
-    5, 5, 7, 7, 7, 7, 5, 5,
-    5, 5, 5, 5, 5, 5, 5, 5,
+    6, 5, 5, 5, 5, 5, 5, 6, 
+    5, 5, 5, 5, 5, 5, 5, 5, 
+    5, 5, 7, 7, 7, 7, 5, 5, 
+    5, 5, 7, 9, 9, 7, 5, 5, 
+    5, 5, 7, 9, 9, 7, 5, 5, 
+    5, 5, 7, 7, 7, 7, 5, 5, 
+    5, 5, 5, 5, 5, 5, 5, 5, 
     6, 5, 5, 5, 5, 5, 5, 6
 };
 const int rook_relevant_bits[64] = {
-    12, 11, 11, 11, 11, 11, 11, 12,
-    11, 10, 10, 10, 10, 10, 10, 11,
-    11, 10, 10, 10, 10, 10, 10, 11,
-    11, 10, 10, 10, 10, 10, 10, 11,
-    11, 10, 10, 10, 10, 10, 10, 11,
-    11, 10, 10, 10, 10, 10, 10, 11,
-    11, 10, 10, 10, 10, 10, 10, 11,
+    12, 11, 11, 11, 11, 11, 11, 12, 
+    11, 10, 10, 10, 10, 10, 10, 11, 
+    11, 10, 10, 10, 10, 10, 10, 11, 
+    11, 10, 10, 10, 10, 10, 10, 11, 
+    11, 10, 10, 10, 10, 10, 10, 11, 
+    11, 10, 10, 10, 10, 10, 10, 11, 
+    11, 10, 10, 10, 10, 10, 10, 11, 
     12, 11, 11, 11, 11, 11, 11, 12
 };
 
-const int lsb_64_table[64] =
-{
-   63, 30,  3, 32, 59, 14, 11, 33,
-   60, 24, 50,  9, 55, 19, 21, 34,
-   61, 29,  2, 53, 51, 23, 41, 18,
-   56, 28,  1, 43, 46, 27,  0, 35,
-   62, 31, 58,  4,  5, 49, 54,  6,
-   15, 52, 12, 40,  7, 42, 45, 16,
-   25, 57, 48, 13, 10, 39,  8, 44,
-   20, 47, 38, 22, 17, 37, 36, 26
-};
-
-
-U64 pawn_attacks[2][64];
-U64 knight_attacks[64];
-U64 king_attacks[64];
-U64 bishop_masks[64];
-U64 rook_masks[64];
-U64 bishop_attacks[64][512];
-U64 rook_attacks[64][4096];
-U64 bitboards[12];
-U64 occboards[3];
-int side;
-int enpassant = null_square;
-int castle;
-unsigned long long nodes;
-
-char checkmateresult;
-int winning_move;
-char PYFEN[128];
-
-// Bit fiddle functions
-unsigned int folded;
-/**
- * bitScanForward
- * @author Matt Taylor (2003)
- * @param bb bitboard to scan
- * @precondition bb != 0
- * @return index (0..63) of least significant one bit
- */
-int bitScanForward(U64 bb) {
-  bb ^= bb - 1;
-  folded = (int)bb ^ (bb >> 32);
-  return lsb_64_table[folded * 0x78291ACF >> 26];
-}
-static int count_bits(U64 bitboard) {
-#ifdef __builtin_popcountll
-  return __builtin_popcountll(bitboard);
-#else
-  // Use your own popcount function if the built-in function is not available
-  int count = 0;
-  while (bitboard) {
-    count++;
-    bitboard &= bitboard - 1;
-  }
-  return count;
-#endif
-}
-
-// Board representation helpers 
-void print_bitboard(U64 bitboard) {
-  printf("\n");
-
-  for (int rank = 0; rank < 8; rank++) {
-    for (int file = 0; file < 8; file++) {
-      int square = rank * 8 + file;
-
-      if (!file) {
-        printf("  %d ", 8 - rank);
-      }
-      printf(" %d", getbit(bitboard, square) ? 1 : 0);
-    }
-    printf("\n");
-  }
-
-  printf("\n     a b c d e f g h\n\n");
-  printf("     Bitboard: %llud\n\n", bitboard);
-}
-void print_board(char info) {
-  printf("\n");
-
-  for (int rank = 0; rank < 8; rank++) {
-    for (int file = 0; file < 8; file++) {
-      int square = rank * 8 + file;
-      if (!file) {
-        printf("  %d ", 8 - rank);
-      }
-      int piece = -1;
-
-      for (int bb_piece = P; bb_piece <= k; bb_piece++) {
-        if (getbit(bitboards[bb_piece], square))
-          piece = bb_piece;
-      }
-
-      // #ifdef WIN64
-      printf(" %c", (piece == -1) ? '.' : ascii_pieces[piece]);
-      // #else
-      //     printf(" %s", (piece == -1) ? "." : unicode_pieces[piece]);
-      // #endif
-    }
-
-    printf("\n");
-  }
-
-  printf("\n     a b c d e f g h\n\n");
-
-  if (info) {
-    printf("     Side:     %s\n", !side ? "white" : "black");
-    printf("     Enpassant:   %s\n", (enpassant != null_square) ? square_to_coordinates[enpassant] : "no");
-    printf("     Castling:  %c%c%c%c\n\n", (castle & wk) ? 'K' : '-',
-      (castle & wq) ? 'Q' : '-',
-      (castle & bk) ? 'k' : '-',
-      (castle & bq) ? 'q' : '-');
-  }
-}
-U64 set_occupancy(int index, int bits_in_mask, U64 attack_mask) {
-  U64 occupancy = 0ULL;
-
-  for (int count = 0; count < bits_in_mask; count++) {
-    int square = bitScanForward(attack_mask);
-    popbit(attack_mask, square);
-
-    if (index & (1 << count)) {
-      occupancy |= (1ULL << square);
-    }
-  }
-
-  return occupancy;
-}
-int get_time_ms(void) {
-  // #ifdef WIN64
-  return GetTickCount();
-  // #else
-  //     struct timeval time_value;
-  //     gettimeofday(&time_value, NULL);
-  //     return time_value.tv_sec * 1000 + time_value.tv_usec / 1000;
-  // #endif
-}
-void parse_fen(char* fen) {
-  memset(bitboards, 0ULL, sizeof(bitboards));
-  memset(occboards, 0ULL, sizeof(occboards));
-
-  side = 0;
-  enpassant = null_square;
-  castle = 0;
-
-  for (int rank = 0; rank < 8; rank++) {
-    for (int file = 0; file < 8; file++) {
-      int square = rank * 8 + file;
-
-      if ((*fen >= 'a' && *fen <= 'z') || (*fen >= 'A' && *fen <= 'Z')) {
-        int piece = char_pieces[*fen];
-        setbit(bitboards[piece], square);
-
-        fen++;
-      }
-
-      if (*fen >= '0' && *fen <= '9') {
-        int offset = *fen - '0';
-        int piece = -1;
-
-        for (int bb_piece = P; bb_piece <= k; bb_piece++) {
-          if (getbit(bitboards[bb_piece], square))
-            piece = bb_piece;
-        }
-
-        if (piece == -1) {
-          file--;
-        }
-
-        file += offset;
-
-        fen++;
-      }
-
-      if (*fen == '/') {
-        fen++;
-      }
-    }
-  }
-
-  fen++;
-
-  (*fen == 'w') ? (side = white) : (side = black);
-
-  fen += 2;
-
-  while (*fen != ' ') {
-    switch (*fen) {
-    case 'K':
-      castle |= wk;
-      break;
-    case 'Q':
-      castle |= wq;
-      break;
-    case 'k':
-      castle |= bk;
-      break;
-    case 'q':
-      castle |= bq;
-      break;
-    case '-':
-      break;
-    }
-
-    fen++;
-  }
-
-  fen++;
-
-  if (*fen != '-') {
-    int file = fen[0] - 'a';
-    int rank = 8 - (fen[1] - '0');
-
-    enpassant = rank * 8 + file;
-  }
-  else {
-    enpassant = null_square;
-  }
-
-  for (int piece = P; piece <= K; piece++) {
-    occboards[white] |= bitboards[piece];
-  }
-
-  for (int piece = p; piece <= k; piece++) {
-    occboards[black] |= bitboards[piece];
-  }
-
-  occboards[both] |= occboards[white];
-  occboards[both] |= occboards[black];
-  print_board(1);
-}
-
-// Fill out the attack tables
-U64 mask_pawn_attacks(int side, int square) {
-  U64 attacks = 0ULL;
-  U64 bitboard = 0ULL;
-  setbit(bitboard, square);
-
-  if (!side) {
-    if ((bitboard >> 7) & NOTAFILE) {
-      attacks |= (bitboard >> 7);
-    }
-    if ((bitboard >> 9) & NOTHFILE) {
-      attacks |= (bitboard >> 9);
-    }
-  }
-  else {
-    if ((bitboard << 7) & NOTHFILE) {
-      attacks |= (bitboard << 7);
-    }
-    if ((bitboard << 9) & NOTAFILE) {
-      attacks |= (bitboard << 9);
-    }
-  }
-
-  return attacks;
-}
-U64 mask_knight_attacks(int square) {
-  U64 attacks = 0ULL;
-  U64 bitboard = 0ULL;
-  setbit(bitboard, square);
-
-  if ((bitboard >> 17) & NOTHFILE) {
-    attacks |= (bitboard >> 17);
-  }
-  if ((bitboard >> 15) & NOTAFILE) {
-    attacks |= (bitboard >> 15);
-  }
-  if ((bitboard >> 10) & NOTHGFILE) {
-    attacks |= (bitboard >> 10);
-  }
-  if ((bitboard >> 6) & NOTABFILE) {
-    attacks |= (bitboard >> 6);
-  }
-  if ((bitboard << 17) & NOTAFILE) {
-    attacks |= (bitboard << 17);
-  }
-  if ((bitboard << 15) & NOTHFILE) {
-    attacks |= (bitboard << 15);
-  }
-  if ((bitboard << 10) & NOTABFILE) {
-    attacks |= (bitboard << 10);
-  }
-  if ((bitboard << 6) & NOTHGFILE) {
-    attacks |= (bitboard << 6);
-  }
-
-  return attacks;
-}
-U64 mask_king_attacks(int square) {
-  U64 attacks = 0ULL;
-  U64 bitboard = 0ULL;
-  setbit(bitboard, square);
-
-  if (bitboard >> 8) {
-    attacks |= (bitboard >> 8);
-  }
-  if ((bitboard >> 9) & NOTHFILE) {
-    attacks |= (bitboard >> 9);
-  }
-  if ((bitboard >> 7) & NOTAFILE) {
-    attacks |= (bitboard >> 7);
-  }
-  if ((bitboard >> 1) & NOTHFILE) {
-    attacks |= (bitboard >> 1);
-  }
-  if (bitboard << 8) {
-    attacks |= (bitboard << 8);
-  }
-  if ((bitboard << 9) & NOTAFILE) {
-    attacks |= (bitboard << 9);
-  }
-  if ((bitboard << 7) & NOTHFILE) {
-    attacks |= (bitboard << 7);
-  }
-  if ((bitboard << 1) & NOTAFILE) {
-    attacks |= (bitboard << 1);
-  }
-
-  return attacks;
-}
-U64 mask_bishop_attacks(int square) {
-  U64 attacks = 0ULL;
-
-  int r, f;
-  int tr = square / 8;
-  int tf = square % 8;
-
-  for (r = tr + 1, f = tf + 1; r <= 6 && f <= 6; r++, f++) {
-    attacks |= (1ULL << (r * 8 + f));
-  }
-  for (r = tr - 1, f = tf + 1; r >= 1 && f <= 6; r--, f++) {
-    attacks |= (1ULL << (r * 8 + f));
-  }
-  for (r = tr + 1, f = tf - 1; r <= 6 && f >= 1; r++, f--) {
-    attacks |= (1ULL << (r * 8 + f));
-  }
-  for (r = tr - 1, f = tf - 1; r >= 1 && f >= 1; r--, f--) {
-    attacks |= (1ULL << (r * 8 + f));
-  }
-
-  return attacks;
-}
-U64 mask_rook_attacks(int square) {
-  U64 attacks = 0ULL;
-
-  int r, f;
-
-  int tr = square / 8;
-  int tf = square % 8;
-
-  for (r = tr + 1; r <= 6; r++) {
-    attacks |= (1ULL << (r * 8 + tf));
-  }
-  for (r = tr - 1; r >= 1; r--) {
-    attacks |= (1ULL << (r * 8 + tf));
-  }
-  for (f = tf + 1; f <= 6; f++) {
-    attacks |= (1ULL << (tr * 8 + f));
-  }
-  for (f = tf - 1; f >= 1; f--) {
-    attacks |= (1ULL << (tr * 8 + f));
-  }
-
-  return attacks;
-}
-
-// Move gen helpers
-static U64 get_bishop_attacks(int square, U64 occupancy) {
-  occupancy &= bishop_masks[square];
-  occupancy *= bishop_magic_numbers[square];
-  occupancy >>= 64 - bishop_relevant_bits[square];
-
-  return bishop_attacks[square][occupancy];
-}
-static U64 get_rook_attacks(int square, U64 occupancy) {
-  occupancy &= rook_masks[square];
-  occupancy *= rook_magic_numbers[square];
-  occupancy >>= 64 - rook_relevant_bits[square];
-
-  return rook_attacks[square][occupancy];
-}
-static U64 get_queen_attacks(int square, U64 occupancy) {
-  U64 queen_attacks = 0ULL;
-  U64 bishop_occupancy = occupancy;
-  U64 rook_occupancy = occupancy;
-
-  bishop_occupancy &= bishop_masks[square];
-  bishop_occupancy *= bishop_magic_numbers[square];
-  bishop_occupancy >>= 64 - bishop_relevant_bits[square];
-
-  queen_attacks = bishop_attacks[square][bishop_occupancy];
-
-  rook_occupancy &= rook_masks[square];
-  rook_occupancy *= rook_magic_numbers[square];
-  rook_occupancy >>= 64 - rook_relevant_bits[square];
-
-  queen_attacks |= rook_attacks[square][rook_occupancy];
-  return queen_attacks;
-}
-static int is_square_attacked(int square, int side) {
-  if ((side == white) && (pawn_attacks[black][square] & bitboards[P])) {
-    return 1;
-  }
-  if ((side == black) && (pawn_attacks[white][square] & bitboards[p])) {
-    return 1;
-  }
-  if (knight_attacks[square] & ((side == white) ? bitboards[N] : bitboards[n])) {
-    ;
-    return 1;
-  }
-  if (get_bishop_attacks(square, occboards[both]) & ((side == white) ? bitboards[B] : bitboards[b])) {
-    return 1;
-  }
-  if (get_rook_attacks(square, occboards[both]) & ((side == white) ? bitboards[R] : bitboards[r])) {
-    return 1;
-  }
-  if (get_queen_attacks(square, occboards[both]) & ((side == white) ? bitboards[Q] : bitboards[q])) {
-    return 1;
-  }
-  return (king_attacks[square] & ((side == white) ? bitboards[K] : bitboards[k]));
-}
-static int makemove(int move, int move_flag) {
-  int source_square = getmovesource(move);
-  int target_square = getmovetarget(move);
-  int piece = getmovepiece(move);
-  int promoted_piece = getmovepromoted(move);
-  int capture = getmovecapture(move);
-  int double_push = getmovedouble(move);
-  int enpass = getmoveenpassant(move);
-  int castling = getmovecastling(move);
-
-  popbit(bitboards[piece], source_square);
-  setbit(bitboards[piece], target_square);
-
-  if (capture) {
-    // print_board(1);
-    // getchar();
-    int start_piece, end_piece;
-
-    if (side == white) {
-      start_piece = p;
-      end_piece = k;
-    }
-    else {
-      start_piece = P;
-      end_piece = K;
-    }
-
-    for (int bb_piece = start_piece; bb_piece <= end_piece; bb_piece++) {
-      if (getbit(bitboards[bb_piece], target_square)) {
-        popbit(bitboards[bb_piece], target_square);
-        break;
-      }
-    }
-  }
-
-  if (promoted_piece) {
-    popbit(bitboards[(side == white) ? P : p], target_square);
-    setbit(bitboards[promoted_piece], target_square);
-  }
-
-  if (enpass) {
-    (side == white) ? popbit(bitboards[p], target_square + 8) : popbit(bitboards[P], target_square - 8);
-  }
-
-  enpassant = null_square;
-
-  if (double_push) {
-    (side == white) ? (enpassant = target_square + 8) : (enpassant = target_square - 8);
-  }
-
-  if (castling) {
-    switch (target_square) {
-    case (g1):
-      popbit(bitboards[R], h1);
-      setbit(bitboards[R], f1);
-      break;
-
-    case (c1):
-      popbit(bitboards[R], a1);
-      setbit(bitboards[R], d1);
-      break;
-
-    case (g8):
-      popbit(bitboards[r], h8);
-      setbit(bitboards[r], f8);
-      break;
-
-    case (c8):
-      popbit(bitboards[r], a8);
-      setbit(bitboards[r], d8);
-      break;
-    }
-  }
-
-  castle &= castling_rights[source_square];
-  castle &= castling_rights[target_square];
-
-  memset(occboards, 0ULL, 24);
-
-  for (int bb_piece = P; bb_piece <= K; bb_piece++) {
-    occboards[white] |= bitboards[bb_piece];
-  }
-
-  for (int bb_piece = p; bb_piece <= k; bb_piece++) {
-    occboards[black] |= bitboards[bb_piece];
-  }
-
-  occboards[both] |= occboards[white];
-  occboards[both] |= occboards[black];
-
-  /*if (move_flag == all_moves) {
-      print_board(0);
-      getchar();
-  }*/
-  // print_board(0);
-
-  if (is_square_attacked((side == white) ? bitScanForward(bitboards[K]) : bitScanForward(bitboards[k]), !side)) {
-    return 0;
-  }
-
-  if (move_flag == all_moves) {
-
-    // print_move(move);
-    /*getchar();
-    if (getmovetarget(move) == f6)
-        printf("stop\n");*/
-
-    checkmateresult = Evaluate();
-    if (checkmateresult == 'c') {
-      // print_board(0);
-      // printf("Checkmate with ");
-      // print_move(move);
-      // getchar();
-      return 2;
-    }
-    else if (checkmateresult == 's') {
-      // double check stalemate checking
-      return 5;
-      // print_board(0);
-      printf("Stalemate with");
-      print_move(move);
-      return 5;
-    }
-  }
-  return 1;
-}
-
-// Debug functions
-void print_move(int move) {
-  if (getmovepromoted(move)) {
-    printf("%s%s%c\n", unicode_pieces[getmovepiece(move)],
-      square_to_coordinates[getmovetarget(move)],
-      promoted_pieces[getmovepromoted(move)]);
-  }
-  else {
-    printf("%s%s\n", unicode_pieces[getmovepiece(move)],
-      square_to_coordinates[getmovetarget(move)]);
-  }
-}
-void print_possible_moves(moves* possible_moves) {
-  if (!possible_moves->count) {
-    printf("\n     No move in the move list!\n");
-    return;
-  }
-
-  printf("\n     move    piece     capture   double    enpass    castling\n\n");
-
-  for (int move_count = 0; move_count < possible_moves->count; move_count++) {
-    int move = possible_moves->moves[move_count];
-    printf("      %s%s%c   %c         %d         %d         %d         %d\n", square_to_coordinates[getmovesource(move)],
-      square_to_coordinates[getmovetarget(move)],
-      getmovepromoted(move) ? promoted_pieces[getmovepromoted(move)] : ' ',
-      ascii_pieces[getmovepiece(move)],
-      getmovecapture(move) ? 1 : 0,
-      getmovedouble(move) ? 1 : 0,
-      getmoveenpassant(move) ? 1 : 0,
-      getmovecastling(move) ? 1 : 0);
-
-    printf("     %s%s%c   %s         %d         %d         %d         %d\n", square_to_coordinates[getmovesource(move)],
-      square_to_coordinates[getmovetarget(move)],
-      getmovepromoted(move) ? promoted_pieces[getmovepromoted(move)] : ' ',
-      unicode_pieces[getmovepiece(move)],
-      getmovecapture(move) ? 1 : 0,
-      getmovedouble(move) ? 1 : 0,
-      getmoveenpassant(move) ? 1 : 0,
-      getmovecastling(move) ? 1 : 0);
-  }
-
-  printf("\n\n     Total number of moves: %llu\n\n", possible_moves->count);
-}
-
-// Python functions
-void py_gen_fen(void) {
-  int index = 0;
-
-  for (int rank = 0; rank < 8; rank++) {
-    int empty = 0;
-
-    for (int file = 0; file < 8; file++) {
-      int square = rank * 8 + file;
-      int piece = -1;
-
-      for (int bb_piece = P; bb_piece <= k; bb_piece++) {
-        if (getbit(bitboards[bb_piece], square))
-          piece = bb_piece;
-      }
-
-      if (piece == -1) {
-        empty++;
-      }
-      else {
-        if (empty) {
-          PYFEN[index++] = '0' + empty;
-          empty = 0;
-        }
-
-        PYFEN[index++] = ascii_pieces[piece];
-      }
-    }
-
-    if (empty) {
-      PYFEN[index++] = '0' + empty;
-    }
-
-    if (rank != 7) {
-      PYFEN[index++] = '/';
-    }
-  }
-
-  PYFEN[index++] = ' ';
-  PYFEN[index++] = (side == white) ? 'w' : 'b';
-  PYFEN[index++] = ' ';
-
-  if (castle & wk) {
-    PYFEN[index++] = 'K';
-  }
-
-  if (castle & wq) {
-    PYFEN[index++] = 'Q';
-  }
-
-  if (castle & bk) {
-    PYFEN[index++] = 'k';
-  }
-
-  if (castle & bq) {
-    PYFEN[index++] = 'q';
-  }
-
-  if (!(castle & wk) && !(castle & wq) && !(castle & bk) && !(castle & bq)) {
-    PYFEN[index++] = '-';
-  }
-
-  PYFEN[index++] = ' ';
-
-  if (enpassant != null_square) {
-    PYFEN[index++] = square_to_coordinates[enpassant][0];
-    PYFEN[index++] = square_to_coordinates[enpassant][1];
-  }
-  else {
-    PYFEN[index++] = '-';
-  }
-
-  PYFEN[index] = '\0';
-  printf("%s", PYFEN);
-}
-char* py_makemove(int move) {
-  makemove(move, all_moves);
-  side = !side;
-  py_gen_fen();
-  return PYFEN;
-}
+//functions - these are out of order
+static inline void Moves(moves *possible_moves);
+char checkorstale(void);
+static inline int makemove(int move, int move_flag);
