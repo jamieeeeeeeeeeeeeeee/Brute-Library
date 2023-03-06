@@ -8,7 +8,7 @@ Exhaustive search for noughts and crosses (tic-tac-toe).
 (assumes X is the first player)
 <br></br>
 ### Example
-`exhaust ..o.xoxox`
+`noughtsandcrosses ..o.xoxox`
 <pre>
 | | |o|
 | |x|o|
