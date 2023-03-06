@@ -371,10 +371,10 @@ class Board():
             self.load_fen(c_functions.py_makemove(self.legals[ALGEBRAIC[target]]), fromc=True)
 
             if self.turn == 'b':
-                self.movelist.insert('', self.fullmoves, values=(str(self.fullmoves) +'. e4', ''))
+                self.movelist.insert('', self.fullmoves + 1, values=(str(self.fullmoves + 1) +'. e4', ''))
             else:
                 self.movelist.delete(self.movelist.get_children()[-1])
-                self.movelist.insert('', self.fullmoves - 1, values=(str(self.fullmoves-1) + '. e4' , "e5")) 
+                self.movelist.insert('', self.fullmoves - 1 , values=(str(self.fullmoves-1) + '. e4' , "e5")) 
 
 
 def main():
