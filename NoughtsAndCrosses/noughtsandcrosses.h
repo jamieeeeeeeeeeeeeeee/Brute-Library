@@ -16,6 +16,11 @@ typedef struct position {
   unsigned turn : 1;
 } position;
 
+typedef struct moveset {
+  position moves[9];
+  int count;
+} moveset;
+
 #define setbit(bitboard, square) ((bitboard) |= (1 << (square)))
 #define getbit(bitboard, square) ((bitboard) & (1 << (square)))
 #define popbit(bitboard, square) ((bitboard) &= ~(1 << (square)))
@@ -24,14 +29,17 @@ typedef struct position {
 
 // Helper functions
 int count_bits(unsigned x) {
+  #ifdef __builtin_popcount
+  return __builtin_popcount(x);
+  #else
   int count = 0;
   while (x) {
     count++;
     x &= (x - 1);
   }
   return count;
+  #endif
 }
-
 void print_position(position P) {
   printf("\n");
   for (int i = 0; i < 9; i++) {

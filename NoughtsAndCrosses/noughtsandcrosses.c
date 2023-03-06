@@ -23,7 +23,6 @@ void Moves(position P, position *M) {
   }
   return;
 }
-
 int Evaluate(position P) {
   for (int row = 0; row < 3; row++) {
     if (getbit(P.x, row * 3) && getbit(P.x, row * 3 + 1) && getbit(P.x, row * 3 + 2)) {
@@ -50,7 +49,6 @@ int Evaluate(position P) {
 
   return DRAW;
 }
-
 int Solve(position P, int alpha, int beta) {
   int result = Evaluate(P);
   if (result != DRAW) {
@@ -67,6 +65,7 @@ int Solve(position P, int alpha, int beta) {
     return 1;
   }
   memset(M, 0, 9 * sizeof(position));
+
   Moves(P, M);
 
   char *evals = malloc(9 * sizeof(int));
@@ -97,7 +96,7 @@ int Solve(position P, int alpha, int beta) {
     }
   }
 
-  // because we changed the move flag earlier
+  // == instead of != because we changed the move flag earlier
   if (P.turn == X) {
     free(M);
     free(evals);
@@ -140,7 +139,7 @@ int main(int argc, char **argv) {
   if (result == DRAW) {
     printf("Draw\n");
   } else {
-    printf("%c wins\n ", result == X ? 'X' : 'O');
+    printf("%c wins\n", result == X ? 'X' : 'O');
   }
 
   return 0;
