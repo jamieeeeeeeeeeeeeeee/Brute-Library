@@ -9,8 +9,14 @@
 #endif
 
 #define U64 unsigned long long
-#define contin 6
 #define stale 5
+#define contin 6
+
+#define BLACK -1
+#define STALE 0
+#define WHITE 1
+#define DRAW 2
+
 //////////////////////////////////////////////////////
 //////////////////////////////////////////////////////
 const int lsb_64_table[64] =
@@ -317,6 +323,7 @@ const int rook_relevant_bits[64] = {
     11, 10, 10, 10, 10, 10, 10, 11, 
     12, 11, 11, 11, 11, 11, 11, 12
 };
+
 
 //functions - these are out of order
 static inline void Moves(moves *possible_moves);

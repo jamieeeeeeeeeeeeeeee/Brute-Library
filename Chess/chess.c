@@ -1054,7 +1054,7 @@ static void Moves(moves* possible_moves) {
     }
   }
 }
-static int Evaluate(int depth) {
+static int Solve(int depth, int alpha, int beta) {
   if (depth == 0) {
     nodes++;
     return 6;
@@ -1099,7 +1099,7 @@ static int Evaluate(int depth) {
     }
 
     side = !side;
-    result = Evaluate(depth - 1);
+    result = Solve(depth - 1);
     take_back();
 
     // if move comes back as a win
@@ -1170,7 +1170,7 @@ int main(int argc , char **argv) {
     printf("%llu: ", i);
 
     start = get_time_ms();
-    int result = Evaluate(i);
+    int result = Solve(i);
     end = get_time_ms();
 
     printf("(%i ms) ", (end - start));
