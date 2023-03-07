@@ -1,17 +1,3 @@
-/**********************************\
- ==================================
-( original :) ) 
-             Didactic
-       BITBOARD CHESS ENGINE
-
-                by
-
-         Code Monkey King
-
- ==================================
-\**********************************/
-
-
 // system headers
 #include <stdio.h>
 #include <stdlib.h>
@@ -1472,12 +1458,13 @@ static inline void add_move(moves* move_list, int move) {
 // print move (for UCI purposes)
 void print_move(int move) {
   if (get_move_promoted(move))
-    printf("%s%s%c", square_to_coordinates[get_move_source(move)],
+    printf("\033[32m%s%s%c\033[0m", square_to_coordinates[get_move_source(move)],
       square_to_coordinates[get_move_target(move)],
       promoted_pieces[get_move_promoted(move)]);
   else
-    printf("%s%s", square_to_coordinates[get_move_source(move)],
+    printf("\033[32m%s%s\033[0m", square_to_coordinates[get_move_source(move)],
       square_to_coordinates[get_move_target(move)]);
+  // print move flags in green
 }
 
 
@@ -2782,102 +2769,6 @@ static inline int is_repetition() {
   return 0;
 }
 
-// quiescence search
-static inline int quiescence(int alpha, int beta) {
-  // every 2047 nodes
-  if ((nodes & 2047) == 0)
-    // "listen" to the GUI/user input
-    communicate();
-
-  // increment nodes count
-  nodes++;
-
-  // we are too deep, hence there's an overflow of arrays relying on max ply constant
-  if (ply > max_ply - 1)
-    // evaluate position
-    return evaluate();
-
-  // evaluate position
-  int evaluation = evaluate();
-
-  // fail-hard beta cutoff
-  if (evaluation >= beta) {
-    // node (position) fails high
-    return beta;
-  }
-
-  // found a better move
-  if (evaluation > alpha) {
-    // PV node (position)
-    alpha = evaluation;
-  }
-
-  // create move list instance
-  moves move_list[1];
-
-  // generate moves
-  generate_moves(move_list);
-
-  // sort moves
-  sort_moves(move_list, 0);
-
-  // loop over moves within a movelist
-  for (int count = 0; count < move_list->count; count++) {
-    // preserve board state
-    copy_board();
-
-    // increment ply
-    ply++;
-
-    // increment repetition index & store hash key
-    repetition_index++;
-    repetition_table[repetition_index] = hash_key;
-
-
-    // make sure to make only legal moves
-    if (make_move(move_list->moves[count], only_captures) == 0) {
-      // decrement ply
-      ply--;
-
-      // decrement repetition index
-      repetition_index--;
-
-      // skip to next move
-      continue;
-    }
-
-    // score current move
-    int score = -quiescence(-beta, -alpha);
-
-    // decrement ply
-    ply--;
-
-    // decrement repetition index
-    repetition_index--;
-
-    // take move back
-    take_back();
-
-    // reutrn 0 if time is up
-    if (stopped == 1) return 0;
-
-    // found a better move
-    if (score > alpha) {
-      // PV node (position)
-      alpha = score;
-
-      // fail-hard beta cutoff
-      if (score >= beta) {
-        // node (position) fails high
-        return beta;
-      }
-    }
-  }
-
-  // node (position) fails low
-  return alpha;
-}
-
 // full depth moves counter
 const int full_depth_moves = 4;
 
@@ -2919,9 +2810,11 @@ static inline int negamax(int alpha, int beta, int depth) {
     communicate();
 
   // recursion escapre condition
-  if (depth == 0)
+  if (depth == 0) {
+    return evaluate();
     // run quiescence search
-    return quiescence(alpha, beta);
+    //return quiescence(alpha, beta);
+  }
 
   // we are too deep, hence there's an overflow of arrays relying on max ply constant
   if (ply > max_ply - 1)
@@ -2945,7 +2838,7 @@ static inline int negamax(int alpha, int beta, int depth) {
   // get static evaluation score
   int static_eval = evaluate();
 
-  // evaluation pruning / static null move pruning
+  /*// evaluation pruning / static null move pruning
   if (depth < 3 && !pv_node && !in_check && abs(beta - 1) > -infinity + 100) {
     // define evaluation margin
     int eval_margin = 120 * depth;
@@ -2981,7 +2874,7 @@ static inline int negamax(int alpha, int beta, int depth) {
     hash_key ^= side_key;
 
     /* search moves with reduced depth to find beta cutoffs
-       depth - 1 - R where R is a reduction limit */
+       depth - 1 - R where R is a reduction limit 
     score = -negamax(-beta, -beta + 1, depth - 1 - 2);
 
     // decrement ply
@@ -3000,12 +2893,12 @@ static inline int negamax(int alpha, int beta, int depth) {
     if (score >= beta)
       // node (position) fails high
       return beta;
-  }
+  }*/
 
   // razoring
   if (!pv_node && !in_check && depth <= 3) {
     // get static eval and add first bonus
-    score = static_eval + 125;
+    score = static_eval;// + 125;
 
     // define new score
     int new_score;
@@ -3015,24 +2908,18 @@ static inline int negamax(int alpha, int beta, int depth) {
       // on depth 1
       if (depth == 1) {
         // get quiscence score
-        new_score = quiescence(alpha, beta);
+        //new_score = quiescence(alpha, beta);
 
         // return quiescence score if it's greater then static evaluation score
-        return (new_score > score) ? new_score : score;
+        return score;//return (new_score > score) ? new_score : score;
       }
 
       // add second bonus to static evaluation
-      score += 175;
+      //score += 175;
 
       // static evaluation indicates a fail-low node
       if (score < beta && depth <= 2) {
-        // get quiscence score
-        new_score = quiescence(alpha, beta);
-
-        // quiescence score indicates fail-low node
-        if (new_score < beta)
-          // return quiescence score if it's greater then static evaluation score
-          return (new_score > score) ? new_score : score;
+        return score;
       }
     }
   }
@@ -3253,20 +3140,20 @@ void search_position(int depth) {
     }
 
     // set up the window for the next iteration
-    alpha = score - 50;
-    beta = score + 50;
+    //alpha = score - 50;
+    //beta = score + 50;
 
     // if PV is available
     if (pv_length[0]) {
       // print search info
       if (score > -mate_value && score < -mate_score)
-        printf("info score mate %d depth %d nodes %lld time %d pv ", -(score + mate_value) / 2 - 1, current_depth, nodes, get_time_ms() - start);
+        printf("\033[31m(Mate %d)\033[0m | Depth %d | Nodes %lld | Time %dms | (Best Moves) ", -(score + mate_value) / 2 - 1, current_depth, nodes, get_time_ms() - start);
 
       else if (score > mate_score && score < mate_value)
-        printf("info score mate %d depth %d nodes %lld time %d pv ", (mate_value - score) / 2 + 1, current_depth, nodes, get_time_ms() - start);
+          printf("\033[31m(Mate %d)\033[0m | Depth %d | Nodes %lld | Time %dms | (Best Moves) ", (mate_value - score) / 2 + 1, current_depth, nodes, get_time_ms() - start);
 
       else
-        printf("info score cp %d depth %d nodes %lld time %d pv ", score, current_depth, nodes, get_time_ms() - start);
+        printf("\033[34m(Mate ?)\033[0m | Depth %d | Nodes %lld | Time %dms | (Best Moves) ", current_depth, nodes, get_time_ms() - start);
 
       // loop over the moves within a PV line
       for (int count = 0; count < pv_length[0]; count++) {
