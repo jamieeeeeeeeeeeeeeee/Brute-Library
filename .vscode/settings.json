@@ -1,0 +1,8 @@
+{
+  "C_Cpp.errorSquiggles": "disabled",
+  "editor.tokenColorCustomizations": {
+    "types": "#5789ff",
+    "comments": "",
+    "textMateRules": []
+  }
+}
