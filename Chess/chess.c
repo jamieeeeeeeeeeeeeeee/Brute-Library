@@ -4,8 +4,6 @@
 #include <string.h>
 #include <unistd.h>
 
-#define WIN64 1
-#define WIN32 1
 #ifdef WIN64
 #include <windows.h>
 #else
@@ -1532,7 +1530,7 @@ void print_move_list(moves* move_list) {
 
 // move types
 enum {
-  all_moves, only_captures
+  all_moves, only_captures, mini_max
 };
 
 /*
@@ -1566,7 +1564,7 @@ const int castling_rights[64] = {
 // make move on chess board
 static inline int make_move(int move, int move_flag) {
   // quiet moves
-  if (move_flag == all_moves) {
+  if (move_flag == all_moves || move_flag == mini_max) {
     // preserve board state
     copy_board();
 
@@ -1792,21 +1790,35 @@ static inline int make_move(int move, int move_flag) {
     // hash side
     hash_key ^= side_key;
 
-    // make sure that king has not been exposed into a check
-    if (is_square_attacked((side == white) ? get_ls1b_index(bitboards[k]) : get_ls1b_index(bitboards[K]), side)) {
-      // take move back
-      take_back();
+    #define ILLEGAL 0
+    #define MINIILLEGAL 2
+    #define LEGAL 1
 
-      // return illegal move
-      return 0;
+    if (move_flag == all_moves) {
+        // make sure that king has not been exposed into a check
+        if (is_square_attacked((side == white) ? get_ls1b_index(bitboards[k]) : get_ls1b_index(bitboards[K]), side)) {
+            // take move back
+            take_back();
+
+            // return illegal move
+            return ILLEGAL;
+        }
+
+        // return legal move
+        return LEGAL;
+    } else {
+        // otherwise if minimax asked for this:
+        if (is_square_attacked((side == white) ? get_ls1b_index(bitboards[k]) : get_ls1b_index(bitboards[K]), side)) {
+            // take move back
+            take_back();
+
+            // return illegal move
+            return MINIILLEGAL;
+        }
+
+        return evaluate();
     }
-
-    // otherwise
-    else
-      // return legal move
-      return 1;
-
-
+    
 }
 
   // capture moves
@@ -2775,6 +2787,64 @@ const int full_depth_moves = 4;
 // depth limit to consider reduction
 const int reduction_limit = 3;
 
+#define CHECKMATE_MIN -1
+#define STALEMATE 0
+#define CHECKMATE_MAX 1
+#define NOT_EVALUATED 2
+#define NON_TERMINAL 3
+
+static inline int minimax(int alpha, int beta, int depth) {
+    if (depth == 0) {
+        nodes++;
+        return NON_TERMINAL;
+    }
+
+    move possible_moves[1];
+    memset(possible_moves, 0, sizeof(possible_moves));
+    generate_moves(possible_moves);
+
+    for (int c = 0; c < possible_moves->count; c++) {
+        copy_board();
+
+        if (get_move_source(possible_moves->moves[c]) == getmovetarget(possible_moves->moves[c])) {
+            continue; // skip null moves (e.g. 000000000000)
+        }
+
+        int result = make_move(possible_moves->[c], mini_max)
+
+        if (result == MINIILLEGAL) {
+            take_back();
+            continue;
+        } else if (result == CHECKMATE_MAX) {
+            possible_moves->win = 1;
+            // if the position is checkmate, no more moves to look at
+            return side;
+        }
+
+        if (result == STALEMATE) {
+            // if the position is stalemate, no more moves to look at
+            possible_moves->draw = 1;
+        }
+
+        if (possible_moves->continue == 0) {
+            possible_moves->continue = 1;
+        } else {
+            possible_moves->continue = 2;
+        }
+
+        side = !side;
+        result = minimax(alpha, beta, depth - 1);
+        take_back();
+
+        if (result == side) {
+            possible_moves->win = 1;
+        }
+        else if (result == 5 || result == both) {
+            possible_moves->draw = 1;
+        }
+    }
+    
+}
 // negamax alpha beta search
 static inline int negamax(int alpha, int beta, int depth) {
   // init PV length

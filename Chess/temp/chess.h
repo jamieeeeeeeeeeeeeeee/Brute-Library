@@ -1,6 +1,12 @@
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
+#ifdef WIN32
 #include <windows.h>
+#else 
+# include <sys/time.h>
+#endif
+
 /**sys/time.h unistd.h*/
 
 #ifdef __LONG_LONG_MAX__
