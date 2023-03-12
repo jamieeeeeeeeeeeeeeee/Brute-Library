@@ -33,7 +33,7 @@ fn go_collatz(mut num: u128) {
 fn time_collatz(mut range: u128) {
   let p64 = 2u64.pow(64) as u128;
   range = p64 + 10u128.pow(range as u32);
-  println!("\n\x1b[34m2^64 => 2^64 + {} \x1b[0m", range);
+  println!("\x1b[34m2^64 => 2^64 + {} \x1b[0m", range);
   if range < p64 {
     println!("\x1b\n[31mOverflow!\x1b[0m");
     return;
@@ -56,7 +56,7 @@ fn time_collatz(mut range: u128) {
     }
     if num > range {
       let elapsed = start.elapsed();
-      println!("\x1b[32mSearch completed in {}.{:03} seconds\x1b[0m", elapsed.as_secs(), elapsed.subsec_millis());
+      println!("\x1b[32mSearch completed in {}.{:03} seconds\x1b[0m\n", elapsed.as_secs(), elapsed.subsec_millis());
       return;
     }
   }
