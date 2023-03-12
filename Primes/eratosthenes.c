@@ -5,6 +5,7 @@
 #include <limits.h>
 #include <math.h>
 #include <time.h>
+#include <errno.h>
 
 // Sieve of Eratosthenes
 int main(int argc, char **argv) {
@@ -44,7 +45,7 @@ int main(int argc, char **argv) {
             break;
         }
         divisor = i;
-        //printf("> %llu \r", divisor);
+        printf("> %llu \r", divisor);
 
         i += divisor;
         while (i < MAX) {
