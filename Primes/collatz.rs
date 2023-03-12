@@ -1,16 +1,20 @@
 use std::io::{self, Write};
+use std::time::Instant;
 
 fn go_collatz(mut num: u128) {
   let mut tmp: u128;
+  let mut bsr: u128;
   let mut next = num + 100000000;
   num -= 1 + num % 2;
   loop {
     num += 2;
     tmp = num;
     while tmp > num {
-      if (tmp >> 1) << 1 != tmp {
-        tmp += (tmp >> 1) + 1;
-      tmp >>= 1;
+      bsr = tmp >> 1;
+      if bsr << 1 != tmp {
+        tmp += (bsr) + 1;
+      } else {
+        tmp = bsr;
       }
     }
     if num > next {
@@ -26,6 +30,39 @@ fn go_collatz(mut num: u128) {
   }
 }
 
+fn time_collatz(mut range: u128) {
+  let p64 = 2u64.pow(64) as u128;
+  range = p64 + 10u128.pow(range as u32);
+  println!("\n\x1b[34m2^64 => 2^64 + {} \x1b[0m", range);
+  if range < p64 {
+    println!("\x1b\n[31mOverflow!\x1b[0m");
+    return;
+  }
+  let mut num = p64;
+  let mut tmp: u128;
+  let mut bsr: u128;
+  num -= 1 + num % 2;
+  let start = Instant::now();
+  loop {
+    num += 2;
+    tmp = num;
+    while tmp > num {
+      bsr = tmp >> 1;
+      if bsr << 1 != tmp {
+        tmp += (bsr) + 1;
+      } else {
+        tmp = bsr;
+      }
+    }
+    if num > range {
+      let elapsed = start.elapsed();
+      println!("\x1b[32mSearch completed in {}.{:03} seconds\x1b[0m", elapsed.as_secs(), elapsed.subsec_millis());
+      return;
+    }
+  }
+}
+
+
 fn do_collatz(mut num: u128) {
     println!("{} => {} (mod 6)\n", num, num % 6);
   while num != 1 {
@@ -38,7 +75,6 @@ fn do_collatz(mut num: u128) {
     }
   }
 }
-
 
 fn main() {
   loop {
@@ -59,6 +95,10 @@ fn main() {
             do_collatz(arg);
             continue;
           },
+          "perft" => {
+            time_collatz(arg);
+            continue;
+          }
           _ => {},
         }
       }
@@ -67,14 +107,17 @@ fn main() {
 
     match command.trim() {
       "q" => break,
-      "h" => println!("q: quit, h: help, go <u128>: start from certain number, do <u128>: do certain number"),
-      "help" => println!("q: quit, h: help, go <u128>: start from certain number, do <u128>: do certain number"),
+      "h" => println!("q: quit, h: help, go <start-num>: start from certain number, do <u1specific-num28>: do certain number, perft <range-num> (from 2^4 to 2^64 + <range-num>)"),
+      "help" => println!("q: quit, h: help, go <start-num>: start from certain number, do <u1specific-num28>: do certain number, perft <level-num> (from 2^644 to 2^64 + 10^<level-num>)"),
       "go" => {
-        println!("Usage: go <u128>");
+        println!("Usage: go <start-num>");
       },
       "do" => {
-        println!("Usage: do <u128>");
+        println!("Usage: do <specific-num>");
       },
+      "perft" => {
+        println!("Usage: perft <level-num>");
+      }
       // print unknown command in red
       _ => println!("\x1b[31mUnknown command: {}\x1b[0m", command.trim()),
     }
